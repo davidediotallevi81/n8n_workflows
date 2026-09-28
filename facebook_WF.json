@@ -1,275 +1,58 @@
 {
-  "name": "SEO AI Agent by WebSensePro",
+  "name": "Facebook_WF",
   "nodes": [
     {
-      "parameters": {
-        "formTitle": "Conversion Rate Optimizer",
-        "formDescription": "Your Landing Page is Leaking Sales—Fix It Now",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Landing Page Url",
-              "placeholder": "https://websensepro.com",
-              "requiredField": true
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "4b4077ba-d009-4f62-b496-99eef595cd43",
-      "name": "Landing Page Url",
-      "type": "n8n-nodes-base.formTrigger",
-      "position": [
-        -560,
-        200
-      ],
-      "webhookId": "afe067a5-4878-4c9d-b746-691f77190f54",
-      "typeVersion": 2.2
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=You are a top-tier SEO Manager with deep expertise in technical SEO and a proven track record of optimizing websites for high performance in Google search rankings.\n\nYour task is to conduct a comprehensive On-Page Technical SEO Audit of a webpage by analyzing its HTML code.\n\nAudit Guidelines:\nReview all technical SEO elements, including but not limited to meta tags, headings, structured data, internal linking, page speed, mobile-friendliness, and indexability.\n\nIdentify any issues that may be impacting the page's ability to rank effectively in search engines.\n\nDeliverables:\nPresent your findings in well-organized bullet points, categorized under the following sections:\n\nCritical Issues – High-priority problems that must be addressed immediately.\n\nQuick Wins – Simple, actionable changes that can lead to significant improvements.\n\nOpportunities for Improvement – Areas that require more effort but offer long-term SEO benefits.\n\nOutput Requirements:\n\nKeep the output professional, concise, and clearly formatted.\n\nUse only bullet points—no introductory or explanatory text before or after the audit.\n\nEnsure readability and clarity throughout the response.\n\nHere is the content of my landing page: {{ $json.data }}",
-        "options": {}
-      },
-      "id": "3ad2d8b8-de20-434f-91e3-038b462c124d",
-      "name": "Content Audit",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "position": [
-        0,
-        400
-      ],
-      "typeVersion": 1.7
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=You are a top-tier SEO Manager with deep expertise in technical SEO and a proven track record of optimizing websites for high performance in Google search rankings.\n\nYour task is to conduct a comprehensive On-Page Technical SEO Audit of a webpage by analyzing its HTML code.\n\nAudit Guidelines:\nReview all technical SEO elements, including but not limited to meta tags, headings, structured data, internal linking, page speed, mobile-friendliness, and indexability.\n\nIdentify any issues that may be impacting the page's ability to rank effectively in search engines.\n\nDeliverables:\nPresent your findings in well-organized bullet points, categorized under the following sections:\n\nCritical Issues – High-priority problems that must be addressed immediately.\n\nQuick Wins – Simple, actionable changes that can lead to significant improvements.\n\nOpportunities for Improvement – Areas that require more effort but offer long-term SEO benefits.\n\nOutput Requirements:\n\nKeep the output professional, concise, and clearly formatted.\n\nUse only bullet points—no introductory or explanatory text before or after the audit.\n\nEnsure readability and clarity throughout the response.\n\nHere is the content of my landing page: {{ $json.data }}",
-        "options": {}
-      },
-      "id": "b44ebc83-d9b9-4481-886b-e560364d0e0c",
-      "name": "Technical Audit",
-      "type": "@n8n/n8n-nodes-langchain.agent",
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
       "position": [
         0,
         0
       ],
-      "typeVersion": 1.7
-    },
-    {
-      "parameters": {},
-      "id": "95680865-505a-4715-b4b1-6ee404fce6ff",
-      "name": "Merge",
-      "type": "n8n-nodes-base.merge",
-      "position": [
-        500,
-        200
-      ],
-      "typeVersion": 3,
-      "alwaysOutputData": true
+      "id": "b57cbe27-960b-4fcd-a4fb-aa59e462cbb6",
+      "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
-        "fieldsToAggregate": {
-          "fieldToAggregate": [
-            {
-              "fieldToAggregate": "output"
-            }
-          ]
-        },
-        "options": {}
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v25.0",
+        "node": "1402041536315676",
+        "edge": "feed",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "Test n8n 3.0"
+              }
+            ]
+          }
+        }
       },
-      "id": "5afccffe-51cb-4a58-98b3-d9801a27ed93",
-      "name": "Aggregate",
-      "type": "n8n-nodes-base.aggregate",
-      "position": [
-        700,
-        200
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "mode": "markdownToHtml",
-        "markdown": "=# On-Page Technical Audit\n{{ $json.output[0] }}\n\n# On-Page SEO Content Audit\n{{ $json.output[1] }}",
-        "options": {}
-      },
-      "id": "a6e96b33-916f-40be-83be-46fb6338c5a4",
-      "name": "Markdown",
-      "type": "n8n-nodes-base.markdown",
-      "position": [
-        900,
-        200
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "content": "## Send Email \nConnect your credentials & Easily send emails from a Gmail address. \n\nMake sure to add your email in \"To:\" field",
-        "height": 140,
-        "width": 360,
-        "color": 3
-      },
-      "id": "431457e7-37cb-4fb0-ba2d-f76509c36a1f",
-      "name": "Sticky Note",
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        980,
-        40
-      ],
-      "typeVersion": 1
-    },
-    {
-      "parameters": {
-        "sendTo": "addyouremail@gmail.com",
-        "subject": "=On-Page SEO Audit -  {{ $('Landing Page Url').item.json['Landing Page Url'] }}",
-        "message": "={{ $json.data }}",
-        "options": {}
-      },
-      "id": "05c1d62a-8e3c-4ae2-acd1-68b809d73c4d",
-      "name": "Gmail",
-      "type": "n8n-nodes-base.gmail",
-      "position": [
-        1100,
-        200
-      ],
-      "webhookId": "2979e4dc-1689-447e-8cd4-eb907b4eedf4",
-      "typeVersion": 2.1
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-2.5-pro-exp-03-25",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        -40,
-        200
+        224,
+        0
       ],
-      "id": "508df880-aeba-4dc1-84bb-fa39f495db31",
-      "name": "Google Gemini Chat Model"
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-2.5-pro-exp-03-25",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        40,
-        620
-      ],
-      "id": "5d3f2488-8794-404b-ab99-23c84935354d",
-      "name": "Google Gemini Chat Model1"
-    },
-    {
-      "parameters": {
-        "content": "## Video Tutorial\nCheckout this video guide on how to run. [Create SEO AI Agent For On-Page SEO](https://youtu.be/O-AShZI8JU0)",
-        "height": 140,
-        "width": 440
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -580,
-        -160
-      ],
-      "id": "8e217b4b-27b6-4838-bf53-2206932d3609",
-      "name": "Sticky Note1"
+      "id": "0f77eb57-5094-49ee-8228-f6bcad1c2b5c",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "No3DPF0YrQXpognr",
+          "name": "Facebook Graph account 2"
+        }
+      }
     }
   ],
   "pinData": {},
   "connections": {
-    "Merge": {
+    "When clicking ‘Execute workflow’": {
       "main": [
         [
           {
-            "node": "Aggregate",
+            "node": "Facebook Graph API",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Markdown": {
-      "main": [
-        [
-          {
-            "node": "Gmail",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Aggregate": {
-      "main": [
-        [
-          {
-            "node": "Markdown",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Content Audit": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Technical Audit": {
-      "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Landing Page Url": {
-      "main": [
-        [
-          {
-            "node": "Content Audit",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Technical Audit",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Technical Audit",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Content Audit",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -278,11 +61,15 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "versionId": "",
+  "versionId": "a45fc2e9-e490-4d8c-a2bf-63547ee5921e",
   "meta": {
-    "instanceId": "ecd2e639b81bdb660ac185adf8d19eb69de747ce51eddef046a1fcc89eedfcaf"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cb8a95a9d059b18303345d7abbb32dce40860a2e5bccf68a736b1e1fda33bcdb"
   },
+  "nodeGroups": [],
+  "id": "ftzl7yxyHuzhz8E5",
   "tags": []
 }

@@ -1,0 +1,144 @@
+{
+  "name": "Trello_WF",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth1",
+        "listId": "68c432497e2202add2b55594",
+        "name": "={{ $json.title }}",
+        "description": "Da Googletask",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.trello",
+      "typeVersion": 1,
+      "position": [
+        656,
+        144
+      ],
+      "id": "3065e3b9-575c-4769-89f6-fa28ba557d79",
+      "name": "Create a card",
+      "credentials": {
+        "trelloOAuth1Api": {
+          "id": "y7ZTna96ywzLFmGJ",
+          "name": "Trello account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "task": "MDAzNjIzMzIyNTQ2NzYzNzg2ODk6MDow",
+        "returnAll": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        400,
+        144
+      ],
+      "id": "a0093f90-21fb-46fe-b187-c288e13de611",
+      "name": "Get many tasks",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "zI5nxdquG9dRXeuX",
+          "name": "Google Tasks Davide_Dio"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        176,
+        144
+      ],
+      "id": "23124cac-2fe3-42a1-b597-6273574f5897",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "task": "MDAzNjIzMzIyNTQ2NzYzNzg2ODk6MDow",
+        "taskId": "={{ $('Get many tasks').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        880,
+        144
+      ],
+      "id": "d8b759fa-af1f-4105-a516-b486cc7a0733",
+      "name": "Delete a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "zI5nxdquG9dRXeuX",
+          "name": "Google Tasks Davide_Dio"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create a card": {
+      "main": [
+        [
+          {
+            "node": "Delete a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many tasks": {
+      "main": [
+        [
+          {
+            "node": "Create a card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Rome",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "7ed150e6-7e6c-479e-b7e4-30ad5f8d8fdc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "96c24a6532fecb1204b6c7e32ddc0b25a7f2a9afa7bbd345428a7638b49bd66a"
+  },
+  "nodeGroups": [],
+  "id": "wsLDvmtyGB0WsLu7",
+  "tags": []
+}

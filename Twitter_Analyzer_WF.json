@@ -1,0 +1,417 @@
+{
+  "name": "Twitter_Analyzer_WF",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Tweet Analyzer",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Tweet URL",
+              "placeholder": "https://x.com/username/status/1234567890",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -368,
+        528
+      ],
+      "id": "8c3e23f7-042c-449c-8311-97c945202b0f",
+      "name": "On form submission",
+      "webhookId": "9ae139d2-ebe2-4f7b-9a89-9341e37968b5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "21171dd5-e8d4-4264-8332-274b585dd8e2",
+              "leftValue": "={{ $json['Tweet URL'] }}",
+              "rightValue": "^https?:\\/\\/(www\\.)?(twitter|x)\\.com\\/.+\\/status\\/\\d+",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        528
+      ],
+      "id": "1efcfc46-e441-45b0-aaca-49394ecc1f3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional political and social media analyst who always responds in a specific JSON format.\n\nYour task is to analyze the following tweet replies and generate a structured, professional report.\n\nTweet Replies to Analyze:\n\n{{ $json.replyText }}\n\nInstructions for the Report Content:\nThe report should be written in Markdown and help the author understand how their message was received. Base all insights on the actual content and language used in the replies.\n\nThe Markdown report must follow this structure:\n\nExecutive Summary: A one-paragraph summary of the overall reception (sentiment, surprises, tone).\n\nSentiment Breakdown: Approximate percentages (positive/neutral/negative), characteristics of each group, and representative examples.\n\nNarrative Analysis: 3–5 recurring narratives, each with a description, quotes, and a note on whether it's organic or strategic.\n\nInfluential or Viral Replies: 3–5 standout replies with an explanation of their impact.\n\nAudience Insight: Analysis of audience expectations, misunderstandings, and perceptions.\n\nStrategic Observations: Suggestions for improvement, timing factors, and signals of pushback.\n\nFinal Output Format:\nYour entire response MUST be a single, valid JSON object. Do not include any text before or after the JSON. The JSON object must have a single key named report_text, where the value is the complete Markdown report you generated.\n\nwrite the analisis in italian languages\n\nEXAMPLE OF THE REQUIRED OUTPUT STRUCTURE:\n\n\n{\n  \"report_text\": \"# Full Sentiment & Narrative Report\\n\\n## 1. Executive Summary\\nOverall, the tweet received a polarized response, with strong support from one segment of the audience and significant criticism from another. The tone was largely passionate, with very few neutral replies.\\n\\n## 2. Sentiment Breakdown\\n- **Positive: 45%** - Supporters focused on the policy's benefits, using words like \\\"commonsense\\\" and \\\"necessary.\\\"\\n- **Negative: 55%** - Critics raised concerns about unintended consequences and government overreach.\"\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        752,
+        432
+      ],
+      "id": "b869dcac-13d2-43cb-b1fa-f67ef9c64871",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\n// 1. Parsing del JSON prodotto dall'AI Agent\nconst parsed = JSON.parse(raw);\n\n// 2. Recupero report_text\nlet report = parsed.report_text;\n\nif (!report) {\n    throw new Error('report_text non trovato');\n}\n\n// 3. Converte i \\n letterali in newline reali\nreport = report\n    .replace(/\\\\n/g, '\\n')\n    .replace(/\\\\\"/g, '\"');\n\n// 4. Trova tutte le sezioni Markdown\nconst lines = report.split('\\n');\n\nconst sections = {};\nlet currentSection = null;\n\nfor (const line of lines) {\n\n    const trimmed = line.trim();\n\n    // Cerca intestazioni tipo:\n    // ### 1. Executive Summary\n    // ### 2. Sentiment Breakdown\n    // ## Narrative Analysis\n    if (trimmed.startsWith('#')) {\n\n        let title = trimmed\n            .replace(/^#+\\s*/, '')      // elimina ###\n            .replace(/^\\d+\\.\\s*/, '')   // elimina \"1. \"\n            .trim();\n\n        currentSection = title;\n\n        sections[currentSection] = '';\n\n        continue;\n    }\n\n    if (currentSection) {\n        sections[currentSection] += line + '\\n';\n    }\n}\n\n// 5. Pulisce gli spazi\nfor (const key of Object.keys(sections)) {\n    sections[key] = sections[key].trim();\n}\n\n// 6. Cerca una sezione in maniera flessibile\nfunction findSection(keyword) {\n\n    const key = Object.keys(sections).find(k =>\n        k.toLowerCase().includes(keyword.toLowerCase())\n    );\n\n    return key ? sections[key] : '';\n}\n\n// 7. Output finale\nreturn [\n    {\n        json: {\n\n            executiveSummary:\n                findSection('executive summary'),\n\n            sentimentBreakdown:\n                findSection('sentiment breakdown'),\n\n            narrativeAnalysis:\n                findSection('narrative analysis'),\n\n            influentialReplies:\n                findSection('influential'),\n\n            audienceInsight:\n                findSection('audience'),\n\n            strategicObservations:\n                findSection('strategic'),\n\n            detectedSections:\n                Object.keys(sections)\n\n        }\n    }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        432
+      ],
+      "id": "f46ee054-0289-4cec-b77a-8e9634f2f71a",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1iiEJobJofMhCFKKY6mcyz0rcxgJVS6rkb2PIfuYy1A8",
+          "mode": "list",
+          "cachedResultName": "Analizing tweet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iiEJobJofMhCFKKY6mcyz0rcxgJVS6rkb2PIfuYy1A8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11mUAWW8fkQVfNSHT68IytC0Slw-DRbeLhdn8Ztvyg5k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Executive Summary": "={{ $json.executiveSummary }}",
+            "Tweet URL": "={{ $('On form submission').item.json['Tweet URL'] }}",
+            "sentimentBreakdown": "={{ $json.sentimentBreakdown }}",
+            "narrativeAnalysis": "={{ $json.narrativeAnalysis }}",
+            "audienceInsight": "={{ $json.audienceInsight }}",
+            "strategicObservations": "={{ $json.strategicObservations }}"
+          },
+          "matchingColumns": [
+            "Tweet URL"
+          ],
+          "schema": [
+            {
+              "id": "Tweet URL",
+              "displayName": "Tweet URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Executive Summary",
+              "displayName": "Executive Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sentimentBreakdown",
+              "displayName": "sentimentBreakdown",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "narrativeAnalysis",
+              "displayName": "narrativeAnalysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "audienceInsight",
+              "displayName": "audienceInsight",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "strategicObservations",
+              "displayName": "strategicObservations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1328,
+        432
+      ],
+      "id": "47a75cd3-d107-418e-91bc-f01ca034cee7",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vrnE9mRHeTB9RuUG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "showText",
+        "responseText": "Incorrect tweet URL, please re-run the workflow"
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        80,
+        624
+      ],
+      "id": "bb0d5c5a-7c65-401c-9eb1-e75c54c078f1",
+      "name": "Incorrect Form URL",
+      "webhookId": "7c8d5f22-ee5d-4f2b-8952-90037207ac41"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Tweet Processing",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        80,
+        432
+      ],
+      "id": "5f7ba6aa-1699-4f2d-9eb9-6cd0d5199aec",
+      "name": "Successful Form Submission",
+      "webhookId": "9e9ff477-7710-43fe-a4a9-fab2ddf34b3a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/actors/scraper_one~x-post-replies-scraper/run-sync-get-dataset-items?token=apify_api_tluy9Rl7uR2O2DhaRyvYnvU6igXVIP2fadsF",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"includeNestedReplies\": false,\n    \"postUrls\": [\n        \"{{ $json['Tweet URL'] }}\"\n    ],\n    \"resultsLimit\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        432
+      ],
+      "id": "9935bcfd-037f-4541-b8fc-ed7e6b7670de",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "replyText"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        528,
+        432
+      ],
+      "id": "242b65b8-6eda-4a6d-a9bb-374df9f6a78f",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        832,
+        672
+      ],
+      "id": "d93b116c-bd42-41bb-a11e-bd0a403b3616",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "PlqgwNrEGeOyk9MD",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Cambiare il form di n8n con render\n",
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "1e27ed10-5a86-4119-b963-85d51b481d13",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Successful Form Submission",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Incorrect Form URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Successful Form Submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "401e06dc-af89-443e-8e1e-27586bc480ac",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "96c24a6532fecb1204b6c7e32ddc0b25a7f2a9afa7bbd345428a7638b49bd66a"
+  },
+  "nodeGroups": [],
+  "id": "yxDwxwULHaqsyETa",
+  "tags": []
+}
